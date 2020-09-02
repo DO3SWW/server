@@ -85,82 +85,90 @@ class FilesAppSharingContext implements Context, ActorAwareInterface {
 	/**
 	 * @return Locator
 	 */
-	public static function shareWithMenuButton($sharedWithName) {
-		return Locator::forThe()->css(".sharing-entry__actions > .action-item__menutoggle")->
+	public static function shareWithMenuTrigger($sharedWithName) {
+		return Locator::forThe()->css(".sharing-entry__actions .trigger")->
 				descendantOf(self::sharedWithRow($sharedWithName))->
+				describedAs("Share with $sharedWithName menu trigger in the details view in Files app");
+	}
+
+	/**
+	 * @return Locator
+	 */
+	public static function shareWithMenuButton($sharedWithName) {
+		return Locator::forThe()->css(".action-item__menutoggle")->
+				descendantOf(self::shareWithMenuTrigger($sharedWithName))->
 				describedAs("Share with $sharedWithName menu button in the details view in Files app");
 	}
 
 	/**
 	 * @return Locator
 	 */
-	public static function shareWithMenu($sharedWithName) {
-		return Locator::forThe()->css(".sharing-entry__actions > .action-item__menu")->
-				descendantOf(self::sharedWithRow($sharedWithName))->
+	public static function shareWithMenu($sharedWithName, $shareWithMenuTriggerElement) {
+		return Locator::forThe()->xpath("//*[@id = " . $shareWithMenuTriggerElement->getWrappedElement()->getXpath() . "/@aria-describedby]")->
 				describedAs("Share with $sharedWithName menu in the details view in Files app");
 	}
 
 	/**
 	 * @return Locator
 	 */
-	public static function permissionCheckboxFor($sharedWithName, $itemText) {
+	public static function permissionCheckboxFor($sharedWithName, $shareWithMenuTriggerElement, $itemText) {
 		// forThe()->checkbox($itemText) can not be used here; that would return
 		// the checkbox itself, but the element that the user interacts with is
 		// the label.
 		return Locator::forThe()->xpath("//label[normalize-space() = '$itemText']")->
-				descendantOf(self::shareWithMenu($sharedWithName))->
+				descendantOf(self::shareWithMenu($sharedWithName, $shareWithMenuTriggerElement))->
 				describedAs("$itemText checkbox in the share with $sharedWithName menu in the details view in Files app");
 	}
 
 	/**
 	 * @return Locator
 	 */
-	public static function permissionCheckboxInputFor($sharedWithName, $itemText) {
+	public static function permissionCheckboxInputFor($sharedWithName, $shareWithMenuTriggerElement, $itemText) {
 		return Locator::forThe()->checkbox($itemText)->
-				descendantOf(self::shareWithMenu($sharedWithName))->
+				descendantOf(self::shareWithMenu($sharedWithName, $shareWithMenuTriggerElement))->
 				describedAs("$itemText checkbox input in the share with $sharedWithName menu in the details view in Files app");
 	}
 
 	/**
 	 * @return Locator
 	 */
-	public static function canEditCheckbox($sharedWithName) {
-		return self::permissionCheckboxFor($sharedWithName, 'Allow editing');
+	public static function canEditCheckbox($sharedWithName, $shareWithMenuTriggerElement) {
+		return self::permissionCheckboxFor($sharedWithName, $shareWithMenuTriggerElement, 'Allow editing');
 	}
 
 	/**
 	 * @return Locator
 	 */
-	public static function canEditCheckboxInput($sharedWithName) {
-		return self::permissionCheckboxInputFor($sharedWithName, 'Allow editing');
+	public static function canEditCheckboxInput($sharedWithName, $shareWithMenuTriggerElement) {
+		return self::permissionCheckboxInputFor($sharedWithName, $shareWithMenuTriggerElement, 'Allow editing');
 	}
 
 	/**
 	 * @return Locator
 	 */
-	public static function canCreateCheckbox($sharedWithName) {
-		return self::permissionCheckboxFor($sharedWithName, 'Allow creating');
+	public static function canCreateCheckbox($sharedWithName, $shareWithMenuTriggerElement) {
+		return self::permissionCheckboxFor($sharedWithName, $shareWithMenuTriggerElement, 'Allow creating');
 	}
 
 	/**
 	 * @return Locator
 	 */
-	public static function canCreateCheckboxInput($sharedWithName) {
-		return self::permissionCheckboxInputFor($sharedWithName, 'Allow creating');
+	public static function canCreateCheckboxInput($sharedWithName, $shareWithMenuTriggerElement) {
+		return self::permissionCheckboxInputFor($sharedWithName, $shareWithMenuTriggerElement, 'Allow creating');
 	}
 
 	/**
 	 * @return Locator
 	 */
-	public static function canReshareCheckbox($sharedWithName) {
-		return self::permissionCheckboxFor($sharedWithName, 'Allow resharing');
+	public static function canReshareCheckbox($sharedWithName, $shareWithMenuTriggerElement) {
+		return self::permissionCheckboxFor($sharedWithName, $shareWithMenuTriggerElement, 'Allow resharing');
 	}
 
 	/**
 	 * @return Locator
 	 */
-	public static function canReshareCheckboxInput($sharedWithName) {
-		return self::permissionCheckboxInputFor($sharedWithName, 'Allow resharing');
+	public static function canReshareCheckboxInput($sharedWithName, $shareWithMenuTriggerElement) {
+		return self::permissionCheckboxInputFor($sharedWithName, $shareWithMenuTriggerElement, 'Allow resharing');
 	}
 
 	/**
@@ -419,7 +427,8 @@ class FilesAppSharingContext implements Context, ActorAwareInterface {
 
 		$this->iSeeThatCanEditTheShare($shareWithName);
 
-		$this->actor->find(self::canEditCheckbox($shareWithName), 2)->click();
+		$shareWithMenuTriggerElement = $this->actor->find(self::shareWithMenuTrigger($shareWithName), 2);
+		$this->actor->find(self::canEditCheckbox($shareWithName, $shareWithMenuTriggerElement), 2)->click();
 	}
 
 	/**
@@ -430,7 +439,8 @@ class FilesAppSharingContext implements Context, ActorAwareInterface {
 
 		$this->iSeeThatCanCreateInTheShare($shareWithName);
 
-		$this->actor->find(self::canCreateCheckbox($shareWithName), 2)->click();
+		$shareWithMenuTriggerElement = $this->actor->find(self::shareWithMenuTrigger($shareWithName), 2);
+		$this->actor->find(self::canCreateCheckbox($shareWithName, $shareWithMenuTriggerElement), 2)->click();
 	}
 
 	/**
@@ -441,7 +451,8 @@ class FilesAppSharingContext implements Context, ActorAwareInterface {
 
 		$this->iSeeThatCanReshareTheShare($shareWithName);
 
-		$this->actor->find(self::canReshareCheckbox($shareWithName), 2)->click();
+		$shareWithMenuTriggerElement = $this->actor->find(self::shareWithMenuTrigger($shareWithName), 2);
+		$this->actor->find(self::canReshareCheckbox($shareWithName, $shareWithMenuTriggerElement), 2)->click();
 	}
 
 	/**
@@ -476,8 +487,9 @@ class FilesAppSharingContext implements Context, ActorAwareInterface {
 	public function iSeeThatCanNotBeAllowedToEditTheShare($sharedWithName) {
 		$this->showShareWithMenuIfNeeded($sharedWithName);
 
+		$shareWithMenuTriggerElement = $this->actor->find(self::shareWithMenuTrigger($sharedWithName), 2);
 		PHPUnit_Framework_Assert::assertEquals(
-				$this->actor->find(self::canEditCheckboxInput($sharedWithName), 10)->getWrappedElement()->getAttribute("disabled"), "disabled");
+				$this->actor->find(self::canEditCheckboxInput($sharedWithName, $shareWithMenuTriggerElement), 10)->getWrappedElement()->getAttribute("disabled"), "disabled");
 	}
 
 	/**
@@ -486,8 +498,9 @@ class FilesAppSharingContext implements Context, ActorAwareInterface {
 	public function iSeeThatCanEditTheShare($sharedWithName) {
 		$this->showShareWithMenuIfNeeded($sharedWithName);
 
+		$shareWithMenuTriggerElement = $this->actor->find(self::shareWithMenuTrigger($sharedWithName), 2);
 		PHPUnit_Framework_Assert::assertTrue(
-				$this->actor->find(self::canEditCheckboxInput($sharedWithName), 10)->isChecked());
+				$this->actor->find(self::canEditCheckboxInput($sharedWithName, $shareWithMenuTriggerElement), 10)->isChecked());
 	}
 
 	/**
@@ -496,8 +509,9 @@ class FilesAppSharingContext implements Context, ActorAwareInterface {
 	public function iSeeThatCanNotEditTheShare($sharedWithName) {
 		$this->showShareWithMenuIfNeeded($sharedWithName);
 
+		$shareWithMenuTriggerElement = $this->actor->find(self::shareWithMenuTrigger($sharedWithName), 2);
 		PHPUnit_Framework_Assert::assertFalse(
-				$this->actor->find(self::canEditCheckboxInput($sharedWithName), 10)->isChecked());
+				$this->actor->find(self::canEditCheckboxInput($sharedWithName, $shareWithMenuTriggerElement), 10)->isChecked());
 	}
 
 	/**
@@ -506,8 +520,9 @@ class FilesAppSharingContext implements Context, ActorAwareInterface {
 	public function iSeeThatCanNotBeAllowedToCreateInTheShare($sharedWithName) {
 		$this->showShareWithMenuIfNeeded($sharedWithName);
 
+		$shareWithMenuTriggerElement = $this->actor->find(self::shareWithMenuTrigger($sharedWithName), 2);
 		PHPUnit_Framework_Assert::assertEquals(
-				$this->actor->find(self::canCreateCheckboxInput($sharedWithName), 10)->getWrappedElement()->getAttribute("disabled"), "disabled");
+				$this->actor->find(self::canCreateCheckboxInput($sharedWithName, $shareWithMenuTriggerElement), 10)->getWrappedElement()->getAttribute("disabled"), "disabled");
 	}
 
 	/**
@@ -516,8 +531,9 @@ class FilesAppSharingContext implements Context, ActorAwareInterface {
 	public function iSeeThatCanCreateInTheShare($sharedWithName) {
 		$this->showShareWithMenuIfNeeded($sharedWithName);
 
+		$shareWithMenuTriggerElement = $this->actor->find(self::shareWithMenuTrigger($sharedWithName), 2);
 		PHPUnit_Framework_Assert::assertTrue(
-				$this->actor->find(self::canCreateCheckboxInput($sharedWithName), 10)->isChecked());
+				$this->actor->find(self::canCreateCheckboxInput($sharedWithName, $shareWithMenuTriggerElement), 10)->isChecked());
 	}
 
 	/**
@@ -526,8 +542,9 @@ class FilesAppSharingContext implements Context, ActorAwareInterface {
 	public function iSeeThatCanNotCreateInTheShare($sharedWithName) {
 		$this->showShareWithMenuIfNeeded($sharedWithName);
 
+		$shareWithMenuTriggerElement = $this->actor->find(self::shareWithMenuTrigger($sharedWithName), 2);
 		PHPUnit_Framework_Assert::assertFalse(
-				$this->actor->find(self::canCreateCheckboxInput($sharedWithName), 10)->isChecked());
+				$this->actor->find(self::canCreateCheckboxInput($sharedWithName, $shareWithMenuTriggerElement), 10)->isChecked());
 	}
 
 	/**
@@ -536,8 +553,9 @@ class FilesAppSharingContext implements Context, ActorAwareInterface {
 	public function iSeeThatCanReshareTheShare($sharedWithName) {
 		$this->showShareWithMenuIfNeeded($sharedWithName);
 
+		$shareWithMenuTriggerElement = $this->actor->find(self::shareWithMenuTrigger($sharedWithName), 2);
 		PHPUnit_Framework_Assert::assertTrue(
-				$this->actor->find(self::canReshareCheckboxInput($sharedWithName), 10)->isChecked());
+				$this->actor->find(self::canReshareCheckboxInput($sharedWithName, $shareWithMenuTriggerElement), 10)->isChecked());
 	}
 
 	/**
@@ -546,8 +564,9 @@ class FilesAppSharingContext implements Context, ActorAwareInterface {
 	public function iSeeThatCanNotReshareTheShare($sharedWithName) {
 		$this->showShareWithMenuIfNeeded($sharedWithName);
 
+		$shareWithMenuTriggerElement = $this->actor->find(self::shareWithMenuTrigger($sharedWithName), 2);
 		PHPUnit_Framework_Assert::assertFalse(
-				$this->actor->find(self::canReshareCheckboxInput($sharedWithName), 10)->isChecked());
+				$this->actor->find(self::canReshareCheckboxInput($sharedWithName, $shareWithMenuTriggerElement), 10)->isChecked());
 	}
 
 	/**
@@ -646,13 +665,15 @@ class FilesAppSharingContext implements Context, ActorAwareInterface {
 	}
 
 	private function showShareWithMenuIfNeeded($shareWithName) {
+		$shareWithMenuTriggerElement = $this->actor->find(self::shareWithMenuTrigger($shareWithName), 2);
+
 		// In some cases the share menu is hidden after clicking on an action of
 		// the menu. Therefore, if the menu is visible, wait a little just in
 		// case it is in the process of being hidden due to a previous action,
 		// in which case it is shown again.
 		if (WaitFor::elementToBeEventuallyNotShown(
 				$this->actor,
-				self::shareWithMenu($shareWithName),
+				self::shareWithMenu($shareWithName, $shareWithMenuTriggerElement),
 				$timeout = 2 * $this->actor->getFindTimeoutMultiplier())) {
 			$this->actor->find(self::shareWithMenuButton($shareWithName), 10)->click();
 		}
